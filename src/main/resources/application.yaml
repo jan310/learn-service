@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: learn-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/learn-service-db
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    hikari:
+      data-source-properties:
+        reWriteBatchedInserts: true
