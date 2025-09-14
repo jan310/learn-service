@@ -1,4 +1,4 @@
-package jan.ondra.learnservice.domain.user.api.validation;
+package jan.ondra.learnservice.validation.languagecode;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;

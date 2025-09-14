@@ -1,0 +1,54 @@
+{
+  "model": "gpt-5-nano",
+  "tools": [],
+  "tool_choice": "none",
+  "include": [],
+  "store": false,
+  "reasoning": {
+    "effort": "minimal"
+  },
+  "input": [
+    {
+      "role": "developer",
+      "content": "You are an educational tutor. Always write in the language that corresponds to the language tag '%s', except for technical terms, which should remain in their original language."
+    },
+    {
+      "role": "user",
+      "content": "A student wants to study the topic '%s'. Design a curriculum consisting of small learning units for this topic. Provide a number, a heading and a subheading for each learning unit. Each learning unit needs to make sense without knowing the other learning units. The curriculum must not contain exercises."
+    }
+  ],
+  "text": {
+    "verbosity": "low",
+    "format": {
+      "type": "json_schema",
+      "name": "queryResponse",
+      "strict": true,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "learningUnits": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "number": {
+                  "type": "integer"
+                },
+                "heading": {
+                  "type": "string"
+                },
+                "subheading": {
+                  "type": "string"
+                }
+              },
+              "required": ["number", "heading", "subheading"],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": ["learningUnits"],
+        "additionalProperties": false
+      }
+    }
+  }
+}

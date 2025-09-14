@@ -1,6 +1,7 @@
 package jan.ondra.learnservice.domain.user.persistence;
 
 import jan.ondra.learnservice.domain.user.model.User;
+import org.springframework.cache.Cache;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -18,12 +19,14 @@ public class UserRepository {
     private static final UserRowMapper userRowMapper = new UserRowMapper();
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
+    private final Cache userCache;
 
-    public UserRepository(NamedParameterJdbcTemplate jdbcTemplate) {
+    public UserRepository(NamedParameterJdbcTemplate jdbcTemplate, Cache userCache) {
         this.jdbcTemplate = jdbcTemplate;
+        this.userCache = userCache;
     }
 
-    public UUID createUser(User user) {
+    public UUID persistUser(User user) {
         var sql = """
             INSERT INTO users (
                 auth_id,
@@ -63,19 +66,30 @@ public class UserRepository {
             }
         }
 
-        return keyHolder.getKeyAs(UUID.class);
+        var userId = keyHolder.getKeyAs(UUID.class);
+        userCache.put(user.authId(), userId);
+        return userId;
     }
 
-    public UUID getIdByAuthId(String authId) {
-        var sql = "SELECT id FROM users WHERE auth_Id = :authId";
-        var paramSource = new MapSqlParameterSource("authId", authId);
-        return jdbcTemplate.queryForObject(sql, paramSource, UUID.class);
+    public UUID getUserIdByAuthId(String authId) {
+        var cachedUserId = userCache.get(authId, UUID.class);
+        if (cachedUserId != null) {
+            return cachedUserId;
+        } else {
+            var sql = "SELECT id FROM users WHERE auth_id = :authId";
+            var paramSource = new MapSqlParameterSource("authId", authId);
+            var userId = jdbcTemplate.queryForObject(sql, paramSource, UUID.class);
+            userCache.put(authId, userId);
+            return userId;
+        }
     }
 
     public User getUser(String authId) {
-        var sql = "SELECT * FROM users WHERE auth_Id = :authId";
+        var sql = "SELECT * FROM users WHERE auth_id = :authId";
         var paramSource = new MapSqlParameterSource("authId", authId);
-        return jdbcTemplate.queryForObject(sql, paramSource, userRowMapper);
+        var user = jdbcTemplate.queryForObject(sql, paramSource, userRowMapper);
+        userCache.put(authId, user.id());
+        return user;
     }
 
     public void updateUser(User user) {
@@ -112,6 +126,7 @@ public class UserRepository {
         var sql = "DELETE FROM users WHERE auth_id = :authId;";
         var paramSource = new MapSqlParameterSource("authId", authId);
         jdbcTemplate.update(sql, paramSource);
+        userCache.evict(authId);
     }
 
 }

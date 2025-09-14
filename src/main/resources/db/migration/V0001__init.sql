@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS learning_units (
     number                  SMALLINT    NOT NULL,
     heading                 TEXT        NOT NULL,
     subheading              TEXT        NOT NULL,
-    content                 TEXT,
+    content                 TEXT        DEFAULT NULL,
     CONSTRAINT pk_learning_units PRIMARY KEY (id),
     CONSTRAINT fk_learning_units_curriculum_id FOREIGN KEY (curriculum_id) REFERENCES curriculums(id) ON DELETE CASCADE
 );

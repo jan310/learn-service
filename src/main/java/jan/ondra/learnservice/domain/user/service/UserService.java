@@ -16,11 +16,11 @@ public class UserService {
     }
 
     public void createUser(User user) {
-        userRepository.createUser(user);
+        userRepository.persistUser(user);
     }
 
-    public UUID getIdByAuthId(String authId) {
-        return userRepository.getIdByAuthId(authId);
+    public UUID getUserIdByAuthId(String authId) {
+        return userRepository.getUserIdByAuthId(authId);
     }
 
     public User getUser(String authId) {

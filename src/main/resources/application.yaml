@@ -8,3 +8,15 @@ spring:
     hikari:
       data-source-properties:
         reWriteBatchedInserts: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${OAUTH2_ISSUER_URI}
+          audiences: ${OAUTH2_AUDIENCE}
+  threads:
+    virtual:
+      enabled: true
+
+openai:
+  api-key: ${OPENAI_API_KEY}

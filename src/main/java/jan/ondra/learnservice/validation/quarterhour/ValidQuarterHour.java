@@ -1,4 +1,4 @@
-package jan.ondra.learnservice.domain.user.api.validation;
+package jan.ondra.learnservice.validation.quarterhour;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
