@@ -1,0 +1,107 @@
+{
+  "id": "resp_68cefd96532c81949c44af366f30289209094a035232e9c2",
+  "object": "response",
+  "created_at": 1758395798,
+  "status": "completed",
+  "background": false,
+  "billing": {
+    "payer": "developer"
+  },
+  "error": null,
+  "incomplete_details": null,
+  "instructions": null,
+  "max_output_tokens": null,
+  "max_tool_calls": null,
+  "model": "gpt-5-nano-2025-08-07",
+  "output": [
+    {
+      "id": "rs_68cefd9743c0819493561afeecbf9ed209094a035232e9c2",
+      "type": "reasoning",
+      "summary": []
+    },
+    {
+      "id": "msg_68cefd974ea08194a586b3bf2e3d2c6309094a035232e9c2",
+      "type": "message",
+      "status": "completed",
+      "content": [
+        {
+          "type": "output_text",
+          "annotations": [],
+          "logprobs": [],
+          "text": "{\"learningUnits\":[{\"number\":1,\"heading\":\"Introduction to History\",\"subheading\":\"What history is, why it matters, and how historians study the past\"},{\"number\":2,\"heading\":\"Chronology and Time Scales\",\"subheading\":\"Key concepts: BCE/CE, eras, and timelines to organize events\"},{\"number\":3,\"heading\":\"Ancient Civilizations\",\"subheading\":\"Foundations of writing, cities, and governance in early societies\"},{\"number\":4,\"heading\":\"Classical Ages\",\"subheading\":\"Greece and Rome: politics, culture, and enduring legacies\"},{\"number\":5,\"heading\":\"World Religions and Cultures\",\"subheading\":\"Beliefs, practices, and their influence on societies across history\"},{\"number\":6,\"heading\":\"Medieval World\",\"subheading\":\"Feudal systems, empires, and daily life in the Middle Ages\"},{\"number\":7,\"heading\":\"Renaissance and Exploration\",\"subheading\":\"Revival of learning, scientific inquiry, and global connections\"},{\"number\":8,\"heading\":\"Early Modern Period\",\"subheading\":\"Reformations, revolutions, and state-building in the 16th–18th centuries\"},{\"number\":9,\"heading\":\"Industrialization and Modernity\",\"subheading\":\"Industrial revolutions, urbanization, and changes in work and technology\"},{\"number\":10,\"heading\":\"World Wars and the 20th Century\",\"subheading\":\"Global conflicts, political change, and democratic movements\"},{\"number\":11,\"heading\":\"History of Science and Technology\",\"subheading\":\"Key innovations and their impact on society across eras\"},{\"number\":12,\"heading\":\"Historiography and Methods\",\"subheading\":\"How historians study sources, bias, and historical interpretation\"}]}"
+        }
+      ],
+      "role": "assistant"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "previous_response_id": null,
+  "prompt_cache_key": null,
+  "reasoning": {
+    "effort": "minimal",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "store": false,
+  "temperature": 1.0,
+  "text": {
+    "format": {
+      "type": "json_schema",
+      "description": null,
+      "name": "queryResponse",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "learningUnits": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "number": {
+                  "type": "integer"
+                },
+                "heading": {
+                  "type": "string"
+                },
+                "subheading": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "number",
+                "heading",
+                "subheading"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "learningUnits"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    "verbosity": "low"
+  },
+  "tool_choice": "none",
+  "tools": [],
+  "top_logprobs": 0,
+  "top_p": 1.0,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 154,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 352,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 506
+  },
+  "user": null,
+  "metadata": {}
+}

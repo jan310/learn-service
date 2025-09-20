@@ -1,6 +1,6 @@
 package jan.ondra.learnservice.domain.curriculum.service;
 
-import jan.ondra.learnservice.client.OpenAiClient;
+import jan.ondra.learnservice.client.openai.OpenAiClient;
 import jan.ondra.learnservice.domain.curriculum.model.Curriculum;
 import jan.ondra.learnservice.domain.curriculum.model.DraftCurriculum;
 import jan.ondra.learnservice.domain.curriculum.persistence.CurriculumRepository;
