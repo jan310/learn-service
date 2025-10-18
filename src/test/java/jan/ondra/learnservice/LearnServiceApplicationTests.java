@@ -11,7 +11,7 @@ class LearnServiceApplicationTests {
 
     @Container
     @ServiceConnection
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:18beta3");
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:18.0");
 
     @Test
     void contextLoads() {

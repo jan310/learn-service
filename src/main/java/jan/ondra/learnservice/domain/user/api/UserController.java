@@ -1,7 +1,7 @@
 package jan.ondra.learnservice.domain.user.api;
 
 import jakarta.validation.Valid;
-import jan.ondra.learnservice.domain.user.model.User;
+import jan.ondra.learnservice.domain.user.mapper.UserMapper;
 import jan.ondra.learnservice.domain.user.service.UserService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -31,19 +31,19 @@ public class UserController {
     @PostMapping
     @ResponseStatus(CREATED)
     public void createUser(@AuthenticationPrincipal Jwt jwt, @RequestBody @Valid UserDTO userDTO) {
-        userService.createUser(new User(jwt.getSubject(), userDTO));
+        userService.createUser(UserMapper.toCreateUser(jwt.getSubject(), userDTO));
     }
 
     @GetMapping
     @ResponseStatus(OK)
     public UserDTO getUser(@AuthenticationPrincipal Jwt jwt) {
-        return new UserDTO(userService.getUser(jwt.getSubject()));
+        return UserMapper.toUserDTO(userService.getUser(jwt.getSubject()));
     }
 
     @PutMapping
     @ResponseStatus(NO_CONTENT)
     public void updateUser(@AuthenticationPrincipal Jwt jwt, @RequestBody @Valid UserDTO userDTO) {
-        userService.updateUser(new User(jwt.getSubject(), userDTO));
+        userService.updateUser(UserMapper.toUpdateUser(jwt.getSubject(), userDTO));
     }
 
     @DeleteMapping

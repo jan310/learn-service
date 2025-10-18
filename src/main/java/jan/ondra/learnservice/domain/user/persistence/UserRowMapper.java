@@ -13,7 +13,7 @@ public class UserRowMapper implements RowMapper<User> {
     public User mapRow(ResultSet rs, int rowNum) throws SQLException {
         return new User(
             rs.getObject("id", UUID.class),
-            rs.getString("auth_id"),
+            rs.getString("auth_subject"),
             rs.getBoolean("notification_enabled"),
             rs.getString("notification_email"),
             rs.getTime("notification_time").toLocalTime(),

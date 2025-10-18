@@ -1,10 +1,10 @@
 package jan.ondra.learnservice.domain.user.service;
 
+import jan.ondra.learnservice.domain.user.model.CreateUser;
+import jan.ondra.learnservice.domain.user.model.UpdateUser;
 import jan.ondra.learnservice.domain.user.model.User;
 import jan.ondra.learnservice.domain.user.persistence.UserRepository;
 import org.springframework.stereotype.Service;
-
-import java.util.UUID;
 
 @Service
 public class UserService {
@@ -15,24 +15,20 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public void createUser(User user) {
-        userRepository.persistUser(user);
+    public void createUser(CreateUser createUser) {
+        userRepository.persistUser(createUser);
     }
 
-    public UUID getUserIdByAuthId(String authId) {
-        return userRepository.getUserIdByAuthId(authId);
+    public User getUser(String authSubject) {
+        return userRepository.getUser(authSubject);
     }
 
-    public User getUser(String authId) {
-        return userRepository.getUser(authId);
+    public void updateUser(UpdateUser updateUser) {
+        userRepository.updateUser(updateUser);
     }
 
-    public void updateUser(User user) {
-        userRepository.updateUser(user);
-    }
-
-    public void deleteUser(String authId) {
-        userRepository.deleteUser(authId);
+    public void deleteUser(String authSubject) {
+        userRepository.deleteUser(authSubject);
     }
 
 }

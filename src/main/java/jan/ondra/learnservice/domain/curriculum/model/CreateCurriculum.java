@@ -1,10 +1,6 @@
 package jan.ondra.learnservice.domain.curriculum.model;
 
-import java.util.UUID;
-
-public record Curriculum(
-    UUID id,
-    UUID userId,
+public record CreateCurriculum(
     CurriculumStatus status,
     String topic,
     int numberOfUnits,

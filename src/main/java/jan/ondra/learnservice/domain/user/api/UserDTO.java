@@ -4,7 +4,6 @@ import jan.ondra.learnservice.validation.email.ValidEmail;
 import jan.ondra.learnservice.validation.languagecode.ValidLanguageCode;
 import jan.ondra.learnservice.validation.quarterhour.ValidQuarterHour;
 import jan.ondra.learnservice.validation.timezone.ValidTimeZone;
-import jan.ondra.learnservice.domain.user.model.User;
 
 import java.time.LocalTime;
 
@@ -22,16 +21,4 @@ public record UserDTO(
 
     @ValidLanguageCode
     String language
-) {
-
-    public UserDTO(User user) {
-        this(
-            user.notificationEnabled(),
-            user.notificationEmail(),
-            user.notificationTime(),
-            user.timezone(),
-            user.language()
-        );
-    }
-
-}
+) {}

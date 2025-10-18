@@ -1,0 +1,26 @@
+{
+  "model": "gpt-5-nano",
+  "tools": [],
+  "tool_choice": "none",
+  "include": [],
+  "store": false,
+  "reasoning": {
+    "effort": "minimal"
+  },
+  "input": [
+    {
+      "role": "developer",
+      "content": "You are an educational tutor. Always write in the language that corresponds to the language tag '%s', except for technical terms, which should remain in their original language. Output all content in Markdown format, making use of appropriate Markdown features such as different heading sizes, bullet points, numbered lists, bold text, and code snippets where helpful."
+    },
+    {
+      "role": "user",
+      "content": "A student is following a curriculum on the topic '%s'. Today's heading is '%s'. Its subheading is '%s'. Generate an info sheet tailored to this subject."
+    }
+  ],
+  "text": {
+    "verbosity": "low",
+    "format": {
+      "type": "text"
+    }
+  }
+}

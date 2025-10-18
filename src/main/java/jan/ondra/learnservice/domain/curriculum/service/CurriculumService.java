@@ -1,17 +1,14 @@
 package jan.ondra.learnservice.domain.curriculum.service;
 
 import jan.ondra.learnservice.client.openai.OpenAiClient;
-import jan.ondra.learnservice.domain.curriculum.model.Curriculum;
-import jan.ondra.learnservice.domain.curriculum.model.DraftCurriculum;
+import jan.ondra.learnservice.domain.curriculum.model.CreateCurriculum;
+import jan.ondra.learnservice.domain.curriculum.model.CreateLearningUnit;
+import jan.ondra.learnservice.domain.curriculum.model.CurriculumIdWithUnits;
+import jan.ondra.learnservice.domain.curriculum.model.LearningUnitView;
 import jan.ondra.learnservice.domain.curriculum.persistence.CurriculumRepository;
-import jan.ondra.learnservice.domain.curriculum.model.EmptyLearningUnit;
-import jan.ondra.learnservice.domain.user.service.UserService;
-import org.springframework.cache.Cache;
+import jan.ondra.learnservice.domain.user.model.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.UUID;
 
 import static jan.ondra.learnservice.domain.curriculum.model.CurriculumStatus.ACTIVE;
 
@@ -19,57 +16,50 @@ import static jan.ondra.learnservice.domain.curriculum.model.CurriculumStatus.AC
 public class CurriculumService {
 
     private final CurriculumRepository curriculumRepository;
-    private final UserService userService;
     private final OpenAiClient openAiClient;
-    private final Cache curriculumCache;
 
     public CurriculumService(
         CurriculumRepository curriculumRepository,
-        UserService userService,
-        OpenAiClient openAiClient,
-        Cache curriculumCache
+        OpenAiClient openAiClient
     ) {
         this.curriculumRepository = curriculumRepository;
-        this.userService = userService;
         this.openAiClient = openAiClient;
-        this.curriculumCache = curriculumCache;
-    }
-
-    public List<EmptyLearningUnit> createDraftCurriculum(String authId, String language, String topic) {
-        var emptyLearningUnits = openAiClient.generateEmptyLearningUnits(language, topic);
-        curriculumCache.put(authId, new DraftCurriculum(topic, emptyLearningUnits));
-        return emptyLearningUnits;
     }
 
     @Transactional
-    public UUID acceptDraftCurriculum(String authId) {
-        var draftCurriculum = curriculumCache.get(authId, DraftCurriculum.class);
-        if (draftCurriculum == null) {
-            throw new RuntimeException("No draft curriculum found for authId: " + authId);
-        }
+    public CurriculumIdWithUnits createCurriculum(User user, String topic) {
+        var emptyLearningUnits = openAiClient.generateEmptyLearningUnits(user.language(), topic);
+        var contentOfFirstLearningUnit = openAiClient.generateLearningUnitContent(
+            new LearningUnitView(
+                user.language(),
+                topic,
+                emptyLearningUnits.getFirst().heading(),
+                emptyLearningUnits.getFirst().subheading()
+            )
+        );
+        var createLearningUnits = emptyLearningUnits.stream()
+            .map(unit ->
+                new CreateLearningUnit(
+                    unit.number(),
+                    unit.heading(),
+                    unit.subheading(),
+                    unit.number() == 1 ? contentOfFirstLearningUnit : null
+                )
+            )
+            .toList();
 
-        curriculumCache.evict(authId);
-
-        var userId = userService.getUserIdByAuthId(authId);
         var curriculumId = curriculumRepository.persistCurriculum(
-            new Curriculum(
-                userId,
+            user.id(),
+            new CreateCurriculum(
                 ACTIVE,
-                draftCurriculum.topic(),
-                draftCurriculum.emptyLearningUnits().size(),
+                topic,
+                emptyLearningUnits.size(),
                 1
             )
         );
-        curriculumRepository.persistEmptyLearningUnits(
-            curriculumId,
-            draftCurriculum.emptyLearningUnits()
-        );
+        curriculumRepository.persistLearningUnits(curriculumId, createLearningUnits);
 
-        return curriculumId;
-    }
-
-    public void rejectDraftCurriculum(String authId) {
-        curriculumCache.evict(authId);
+        return new CurriculumIdWithUnits(curriculumId, emptyLearningUnits);
     }
 
 }

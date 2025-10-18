@@ -3,6 +3,7 @@ package jan.ondra.learnservice.client.openai;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jan.ondra.learnservice.domain.curriculum.model.EmptyLearningUnit;
+import jan.ondra.learnservice.domain.curriculum.model.LearningUnitView;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.core.io.Resource;
@@ -24,11 +25,13 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 public class OpenAiClient {
 
     private final RestClient restClient;
-    private final String createCurriculumRequestBodyTemplate;
     private final ObjectMapper objectMapper;
+    private final String createCurriculumRequestBodyTemplate;
+    private final String createLearningUnitContentRequestBodyTemplate;
 
     public OpenAiClient(
         @Value("classpath:openai-request-templates/create-curriculum.json") Resource curriculumResource,
+        @Value("classpath:openai-request-templates/create-learning-unit-content.json") Resource learningUnitResource,
         OpenAiProperties openAiProperties,
         RestClient.Builder restClientBuilder,
         ObjectMapper objectMapper
@@ -43,9 +46,10 @@ public class OpenAiClient {
             .defaultHeader(AUTHORIZATION, "Bearer " + openAiProperties.apiKey())
             .build();
 
-        this.createCurriculumRequestBodyTemplate = curriculumResource.getContentAsString(UTF_8);
-
         this.objectMapper = objectMapper;
+
+        this.createCurriculumRequestBodyTemplate = curriculumResource.getContentAsString(UTF_8);
+        this.createLearningUnitContentRequestBodyTemplate = learningUnitResource.getContentAsString(UTF_8);
     }
 
     public List<EmptyLearningUnit> generateEmptyLearningUnits(String language, String topic) {
@@ -81,6 +85,44 @@ public class OpenAiClient {
         } catch (Exception e) {
             throw new OpenAiRequestException(
                 "OpenAI request to generate EmptyLearningUnits returned an unexpected response body: " + responseJson, e
+            );
+        }
+    }
+
+    public String generateLearningUnitContent(LearningUnitView learningUnitView) {
+        String responseJson;
+
+        try {
+            responseJson = restClient
+                .post()
+                .uri("/v1/responses")
+                .contentType(APPLICATION_JSON)
+                .body(
+                    String.format(
+                        createLearningUnitContentRequestBodyTemplate,
+                        learningUnitView.language(),
+                        learningUnitView.topic(),
+                        learningUnitView.heading(),
+                        learningUnitView.subheading()
+                    )
+                )
+                .retrieve()
+                .body(String.class);
+        } catch (RestClientException e) {
+            throw new OpenAiRequestException("OpenAI request to generate a LearningUnit failed", e);
+        }
+
+        try {
+            return objectMapper.readTree(responseJson)
+                .get("output")
+                .get(1)
+                .get("content")
+                .get(0)
+                .get("text")
+                .asText();
+        } catch (Exception e) {
+            throw new OpenAiRequestException(
+                "OpenAI request to generate a LearningUnit returned an unexpected response body: " + responseJson, e
             );
         }
     }

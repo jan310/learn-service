@@ -21,7 +21,7 @@ public class DatabaseIntegrationTest {
 
     @Container
     @ServiceConnection
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:18beta3");
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:18.0");
 
     @Autowired
     private NamedParameterJdbcTemplate jdbcTemplate;
@@ -34,11 +34,11 @@ public class DatabaseIntegrationTest {
     public User buildUser(User user, UUID id) {
         return new User(
             id,
-            user.authId(),
+            user.authSubject(),
             user.notificationEnabled(),
             user.notificationEmail(),
             user.notificationTime(),
-            user.timezone(),
+            user.timeZone(),
             user.language()
         );
     }
@@ -46,7 +46,7 @@ public class DatabaseIntegrationTest {
     public User insertUser (User user) {
         var sql = """
             INSERT INTO users (
-                auth_id,
+                auth_subject,
                 notification_enabled,
                 notification_email,
                 notification_time,
@@ -64,11 +64,11 @@ public class DatabaseIntegrationTest {
             """;
 
         var paramSource = new MapSqlParameterSource()
-            .addValue("authId", user.authId())
+            .addValue("authSubject", user.authSubject())
             .addValue("notificationEnabled", user.notificationEnabled())
             .addValue("notificationEmail", user.notificationEmail())
             .addValue("notificationTime", user.notificationTime())
-            .addValue("timeZone", user.timezone())
+            .addValue("timeZone", user.timeZone())
             .addValue("language", user.language());
 
         var keyHolder = new GeneratedKeyHolder();

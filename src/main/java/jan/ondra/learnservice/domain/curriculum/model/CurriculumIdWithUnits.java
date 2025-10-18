@@ -1,8 +1,9 @@
 package jan.ondra.learnservice.domain.curriculum.model;
 
 import java.util.List;
+import java.util.UUID;
 
-public record DraftCurriculum(
-    String topic,
+public record CurriculumIdWithUnits(
+    UUID curriculumId,
     List<EmptyLearningUnit> emptyLearningUnits
 ) {}

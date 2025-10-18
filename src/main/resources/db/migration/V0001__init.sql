@@ -1,13 +1,13 @@
 CREATE TABLE IF NOT EXISTS users (
     id                      UUID        DEFAULT uuidv7(),
-    auth_id                 TEXT        NOT NULL,
+    auth_subject            TEXT        NOT NULL,
     notification_enabled    BOOLEAN     NOT NULL,
     notification_email      TEXT        NOT NULL,
     notification_time       TIME        NOT NULL,
     time_zone               TEXT        NOT NULL,
     language                TEXT        NOT NULL,
     CONSTRAINT pk_users PRIMARY KEY (id),
-    CONSTRAINT uq_users_auth_id UNIQUE (auth_id),
+    CONSTRAINT uq_users_auth_subject UNIQUE (auth_subject),
     CONSTRAINT uq_users_notification_email UNIQUE (notification_email)
 );
 
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS learning_units (
     number                  SMALLINT    NOT NULL,
     heading                 TEXT        NOT NULL,
     subheading              TEXT        NOT NULL,
-    content                 TEXT        DEFAULT NULL,
+    content                 TEXT,
     CONSTRAINT pk_learning_units PRIMARY KEY (id),
     CONSTRAINT fk_learning_units_curriculum_id FOREIGN KEY (curriculum_id) REFERENCES curriculums(id) ON DELETE CASCADE
 );

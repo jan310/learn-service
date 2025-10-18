@@ -1,10 +1,8 @@
 package jan.ondra.learnservice.domain.user.model;
 
 import java.time.LocalTime;
-import java.util.UUID;
 
-public record User(
-    UUID id,
+public record UpdateUser(
     String authSubject,
     boolean notificationEnabled,
     String notificationEmail,

@@ -1,35 +1,36 @@
 package jan.ondra.learnservice.domain.user.persistence;
 
+import jan.ondra.learnservice.domain.user.model.CreateUser;
+import jan.ondra.learnservice.domain.user.model.UpdateUser;
 import jan.ondra.learnservice.domain.user.model.User;
-import org.springframework.cache.Cache;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
-
-import java.util.UUID;
 
 @Repository
 public class UserRepository {
 
     private static final String USERS_NOTIFICATION_EMAIL_UNIQUE_VIOLATION =
         "violates unique constraint \"uq_users_notification_email\"";
+    private static final String USERS_CACHE_NAME = "users";
 
     private static final UserRowMapper userRowMapper = new UserRowMapper();
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
-    private final Cache userCache;
 
-    public UserRepository(NamedParameterJdbcTemplate jdbcTemplate, Cache userCache) {
+    public UserRepository(NamedParameterJdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-        this.userCache = userCache;
     }
 
-    public UUID persistUser(User user) {
+    @CachePut(value = USERS_CACHE_NAME, key = "#createUser.authSubject()")
+    public User persistUser(CreateUser createUser) {
         var sql = """
             INSERT INTO users (
-                auth_id,
+                auth_subject,
                 notification_enabled,
                 notification_email,
                 notification_time,
@@ -37,27 +38,26 @@ public class UserRepository {
                 language
             )
             VALUES (
-                :authId,
+                :authSubject,
                 :notificationEnabled,
                 :notificationEmail,
                 :notificationTime,
                 :timeZone,
                 :language
-            );
+            )
+            RETURNING *;
             """;
 
         var paramSource = new MapSqlParameterSource()
-            .addValue("authId", user.authId())
-            .addValue("notificationEnabled", user.notificationEnabled())
-            .addValue("notificationEmail", user.notificationEmail())
-            .addValue("notificationTime", user.notificationTime())
-            .addValue("timeZone", user.timezone())
-            .addValue("language", user.language());
-
-        var keyHolder = new GeneratedKeyHolder();
+            .addValue("authSubject", createUser.authSubject())
+            .addValue("notificationEnabled", createUser.notificationEnabled())
+            .addValue("notificationEmail", createUser.notificationEmail())
+            .addValue("notificationTime", createUser.notificationTime())
+            .addValue("timeZone", createUser.timeZone())
+            .addValue("language", createUser.language());
 
         try {
-            jdbcTemplate.update(sql, paramSource, keyHolder, new String[]{"id"});
+            return jdbcTemplate.queryForObject(sql, paramSource, userRowMapper);
         } catch (DataIntegrityViolationException e) {
             if (e.getMostSpecificCause().getMessage().contains(USERS_NOTIFICATION_EMAIL_UNIQUE_VIOLATION)) {
                 throw new EmailAlreadyInUseException(e);
@@ -65,34 +65,17 @@ public class UserRepository {
                 throw e;
             }
         }
-
-        var userId = keyHolder.getKeyAs(UUID.class);
-        userCache.put(user.authId(), userId);
-        return userId;
     }
 
-    public UUID getUserIdByAuthId(String authId) {
-        var cachedUserId = userCache.get(authId, UUID.class);
-        if (cachedUserId != null) {
-            return cachedUserId;
-        } else {
-            var sql = "SELECT id FROM users WHERE auth_id = :authId";
-            var paramSource = new MapSqlParameterSource("authId", authId);
-            var userId = jdbcTemplate.queryForObject(sql, paramSource, UUID.class);
-            userCache.put(authId, userId);
-            return userId;
-        }
+    @Cacheable(value = USERS_CACHE_NAME, key = "#authSubject")
+    public User getUser(String authSubject) {
+        var sql = "SELECT * FROM users WHERE auth_subject = :authSubject";
+        var paramSource = new MapSqlParameterSource("authSubject", authSubject);
+        return jdbcTemplate.queryForObject(sql, paramSource, userRowMapper);
     }
 
-    public User getUser(String authId) {
-        var sql = "SELECT * FROM users WHERE auth_id = :authId";
-        var paramSource = new MapSqlParameterSource("authId", authId);
-        var user = jdbcTemplate.queryForObject(sql, paramSource, userRowMapper);
-        userCache.put(authId, user.id());
-        return user;
-    }
-
-    public void updateUser(User user) {
+    @CachePut(value = USERS_CACHE_NAME, key = "#updateUser.authSubject()")
+    public User updateUser(UpdateUser updateUser) {
         var sql = """
             UPDATE users SET
                 notification_enabled = :notificationEnabled,
@@ -100,19 +83,20 @@ public class UserRepository {
                 notification_time = :notificationTime,
                 time_zone = :timeZone,
                 language = :language
-            WHERE auth_id = :authId;
+            WHERE auth_subject = :authSubject
+            RETURNING *;
             """;
 
         var paramSource = new MapSqlParameterSource()
-            .addValue("authId", user.authId())
-            .addValue("notificationEnabled", user.notificationEnabled())
-            .addValue("notificationEmail", user.notificationEmail())
-            .addValue("notificationTime", user.notificationTime())
-            .addValue("timeZone", user.timezone())
-            .addValue("language", user.language());
+            .addValue("authSubject", updateUser.authSubject())
+            .addValue("notificationEnabled", updateUser.notificationEnabled())
+            .addValue("notificationEmail", updateUser.notificationEmail())
+            .addValue("notificationTime", updateUser.notificationTime())
+            .addValue("timeZone", updateUser.timeZone())
+            .addValue("language", updateUser.language());
 
         try {
-            jdbcTemplate.update(sql, paramSource);
+            return jdbcTemplate.queryForObject(sql, paramSource, userRowMapper);
         } catch (DataIntegrityViolationException e) {
             if (e.getMostSpecificCause().getMessage().contains(USERS_NOTIFICATION_EMAIL_UNIQUE_VIOLATION)) {
                 throw new EmailAlreadyInUseException(e);
@@ -122,11 +106,11 @@ public class UserRepository {
         }
     }
 
-    public void deleteUser(String authId) {
-        var sql = "DELETE FROM users WHERE auth_id = :authId;";
-        var paramSource = new MapSqlParameterSource("authId", authId);
+    @CacheEvict(value = USERS_CACHE_NAME, key = "#authSubject")
+    public void deleteUser(String authSubject) {
+        var sql = "DELETE FROM users WHERE auth_subject = :authSubject;";
+        var paramSource = new MapSqlParameterSource("authSubject", authSubject);
         jdbcTemplate.update(sql, paramSource);
-        userCache.evict(authId);
     }
 
 }
