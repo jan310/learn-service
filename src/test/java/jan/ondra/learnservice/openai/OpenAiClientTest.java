@@ -1,8 +1,5 @@
-package jan.ondra.learnservice.client.openai;
+package jan.ondra.learnservice.openai;
 
-import jan.ondra.learnservice.openai.OpenAiRequestException;
-import jan.ondra.learnservice.openai.OpenAiClient;
-import jan.ondra.learnservice.openai.OpenAiProperties;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -47,12 +44,15 @@ class OpenAiClientTest {
         @Test
         @DisplayName("returns correct result")
         void test1() throws IOException {
+            // GIVEN
             var json = getJsonFromFile("openai-mock-responses/create_curriculum_response_body.json");
-
             stubFor(post("/v1/responses").willReturn(ok(json)));
 
+            // WHEN
             var result = openAiClient.generateEmptyLearningUnits("en", "History");
 
+
+            // THEN
             assertThat(result)
                 .extracting("number")
                 .containsExactly(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
@@ -62,10 +62,12 @@ class OpenAiClientTest {
         }
 
         @Test
-        @DisplayName("throws correct OpenAiRequestException on timeout")
+        @DisplayName("throws OpenAiRequestException on timeout")
         void test2() {
+            // GIVEN
             stubFor(post("/v1/responses").willReturn(aResponse().withFixedDelay(500)));
 
+            // WHEN THEN
             assertThatThrownBy(() -> openAiClient.generateEmptyLearningUnits("en", "History"))
                 .isInstanceOf(OpenAiRequestException.class)
                 .hasMessage("OpenAI request to generate EmptyLearningUnits failed")
@@ -73,10 +75,12 @@ class OpenAiClientTest {
         }
 
         @Test
-        @DisplayName("throws correct OpenAiRequestException on client error")
+        @DisplayName("throws OpenAiRequestException on client error")
         void test3() {
+            // GIVEN
             stubFor(post("/v1/responses").willReturn(aResponse().withStatus(400)));
 
+            // WHEN THEN
             assertThatThrownBy(() -> openAiClient.generateEmptyLearningUnits("en", "History"))
                 .isInstanceOf(OpenAiRequestException.class)
                 .hasMessage("OpenAI request to generate EmptyLearningUnits failed")
@@ -84,10 +88,12 @@ class OpenAiClientTest {
         }
 
         @Test
-        @DisplayName("throws correct OpenAiRequestException on server error")
+        @DisplayName("throws OpenAiRequestException on server error")
         void test4() {
+            // GIVEN
             stubFor(post("/v1/responses").willReturn(aResponse().withStatus(500)));
 
+            // WHEN THEN
             assertThatThrownBy(() -> openAiClient.generateEmptyLearningUnits("en", "History"))
                 .isInstanceOf(OpenAiRequestException.class)
                 .hasMessage("OpenAI request to generate EmptyLearningUnits failed")
@@ -95,14 +101,90 @@ class OpenAiClientTest {
         }
 
         @Test
-        @DisplayName("throws correct OpenAiRequestException on unexpected response body")
+        @DisplayName("throws OpenAiRequestException on unexpected response body")
         void test5() {
+            // GIVEN
             stubFor(post("/v1/responses").willReturn(ok("-.-")));
 
+            // WHEN THEN
             assertThatThrownBy(() -> openAiClient.generateEmptyLearningUnits("en", "History"))
                 .isInstanceOf(OpenAiRequestException.class)
                 .hasMessage(
                     "OpenAI request to generate EmptyLearningUnits returned an unexpected response body: -.-"
+                );
+        }
+
+    }
+
+    @Nested
+    class GenerateLearningUnitContent {
+
+        @Test
+        @DisplayName("returns correct result")
+        void test1() throws IOException {
+            // GIVEN
+            var json = getJsonFromFile("openai-mock-responses/create_learning_unit_response_body.json");
+            stubFor(post("/v1/responses").willReturn(ok(json)));
+
+            // WHEN
+            var result = openAiClient.generateLearningUnitContent("en", "java", "Lists", "ArrayList");
+
+            // THEN
+            assertThat(result).contains(
+                "An ArrayList is a resizable-array implementation of the List interface in Java. It is part of the"
+            );
+        }
+
+        @Test
+        @DisplayName("throws OpenAiRequestException on timeout")
+        void test2() {
+            // GIVEN
+            stubFor(post("/v1/responses").willReturn(aResponse().withFixedDelay(500)));
+
+            // WHEN THEN
+            assertThatThrownBy(() -> openAiClient.generateLearningUnitContent("en", "java", "Lists", "ArrayList"))
+                .isInstanceOf(OpenAiRequestException.class)
+                .hasMessage("OpenAI request to generate a LearningUnit failed")
+                .hasRootCauseInstanceOf(SocketTimeoutException.class);
+        }
+
+        @Test
+        @DisplayName("throws OpenAiRequestException on client error")
+        void test3() {
+            // GIVEN
+            stubFor(post("/v1/responses").willReturn(aResponse().withStatus(400)));
+
+            // WHEN THEN
+            assertThatThrownBy(() -> openAiClient.generateLearningUnitContent("en", "java", "Lists", "ArrayList"))
+                .isInstanceOf(OpenAiRequestException.class)
+                .hasMessage("OpenAI request to generate a LearningUnit failed")
+                .hasRootCauseInstanceOf(HttpClientErrorException.class);
+        }
+
+        @Test
+        @DisplayName("throws OpenAiRequestException on server error")
+        void test4() {
+            // GIVEN
+            stubFor(post("/v1/responses").willReturn(aResponse().withStatus(500)));
+
+            // WHEN THEN
+            assertThatThrownBy(() -> openAiClient.generateLearningUnitContent("en", "java", "Lists", "ArrayList"))
+                .isInstanceOf(OpenAiRequestException.class)
+                .hasMessage("OpenAI request to generate a LearningUnit failed")
+                .hasRootCauseInstanceOf(HttpServerErrorException.class);
+        }
+
+        @Test
+        @DisplayName("throws OpenAiRequestException on unexpected response body")
+        void test5() {
+            // GIVEN
+            stubFor(post("/v1/responses").willReturn(ok("-.-")));
+
+            // WHEN THEN
+            assertThatThrownBy(() -> openAiClient.generateLearningUnitContent("en", "java", "Lists", "ArrayList"))
+                .isInstanceOf(OpenAiRequestException.class)
+                .hasMessage(
+                    "OpenAI request to generate a LearningUnit returned an unexpected response body: -.-"
                 );
         }
 
