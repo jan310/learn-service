@@ -1,5 +1,8 @@
 package jan.ondra.learnservice.client.openai;
 
+import jan.ondra.learnservice.openai.OpenAiRequestException;
+import jan.ondra.learnservice.openai.OpenAiClient;
+import jan.ondra.learnservice.openai.OpenAiProperties;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

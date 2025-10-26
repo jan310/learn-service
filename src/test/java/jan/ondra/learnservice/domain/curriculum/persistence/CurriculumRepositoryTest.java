@@ -1,6 +1,7 @@
 package jan.ondra.learnservice.domain.curriculum.persistence;
 
 import jan.ondra.learnservice.helper.DatabaseIntegrationTest;
+import jan.ondra.learnservice.curriculum.repository.CurriculumRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

@@ -16,7 +16,6 @@ CREATE TABLE IF NOT EXISTS curriculums (
     user_id                 UUID        NOT NULL,
     status                  TEXT        NOT NULL,
     topic                   TEXT        NOT NULL,
-    number_of_units         SMALLINT    NOT NULL,
     current_unit_number     SMALLINT    NOT NULL,
     CONSTRAINT pk_curriculums PRIMARY KEY (id),
     CONSTRAINT fk_curriculums_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE

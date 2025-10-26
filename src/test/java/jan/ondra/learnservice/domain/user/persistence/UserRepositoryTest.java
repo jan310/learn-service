@@ -1,6 +1,6 @@
 //package jan.ondra.learnservice.domain.user.persistence;
 //
-//import jan.ondra.learnservice.domain.user.model.User;
+//import jan.ondra.learnservice.user.model.User;
 //import jan.ondra.learnservice.helper.DatabaseIntegrationTest;
 //import org.junit.jupiter.api.DisplayName;
 //import org.junit.jupiter.api.Nested;

@@ -1,7 +1,7 @@
 package jan.ondra.learnservice.helper;
 
-import jan.ondra.learnservice.domain.user.model.User;
-import jan.ondra.learnservice.domain.user.persistence.UserRowMapper;
+import jan.ondra.learnservice.user.model.User;
+import jan.ondra.learnservice.user.repository.UserRowMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
