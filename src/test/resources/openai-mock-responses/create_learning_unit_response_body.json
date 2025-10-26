@@ -1,0 +1,72 @@
+{
+  "id": "resp_0f4e4e03ec41ffd90168fdc8ebaa988195ab4cecd6cb3963e9",
+  "object": "response",
+  "created_at": 1761462508,
+  "status": "completed",
+  "background": false,
+  "billing": {
+    "payer": "developer"
+  },
+  "error": null,
+  "incomplete_details": null,
+  "instructions": null,
+  "max_output_tokens": null,
+  "max_tool_calls": null,
+  "model": "gpt-5-nano-2025-08-07",
+  "output": [
+    {
+      "id": "rs_0f4e4e03ec41ffd90168fdc8ee932081959f448707f79af9dd",
+      "type": "reasoning",
+      "summary": []
+    },
+    {
+      "id": "msg_0f4e4e03ec41ffd90168fdc8ee9f3c8195a6202fd97e1a9455",
+      "type": "message",
+      "status": "completed",
+      "content": [
+        {
+          "type": "output_text",
+          "annotations": [],
+          "logprobs": [],
+          "text": "# Lists in Java\n\n## ArrayList\n\nAn ArrayList is a resizable-array implementation of the List interface in Java. It is part of the Java Collections Framework.\n\n---\n\n## Key characteristics\n\n- **Resizable:** Automatically grows as you add elements.\n- **Indexed access:** Elements can be accessed via an index (0-based).\n- **Contains duplicates:** Allows duplicate elements and null values.\n- ** ordered:** Maintains insertion order.\n- **Not synchronized:** If multiple threads access it concurrently, external synchronization is needed.\n\n---\n\n## When to use ArrayList\n\n- You need random access to elements by index.\n- You frequently add or remove elements at the end.\n- You want to preserve the order of elements.\n- You don’t require fast insertion/removal in the middle (that’s better with LinkedList or other structures).\n\n---\n\n## Basic operations\n\n### Creation\n```java\nimport java.util.ArrayList;\nimport java.util.List;\n\nList<String> fruits = new ArrayList<>();\n```\n\n### Add elements\n```java\nfruits.add(\"Apple\");\nfruits.add(\"Banana\");\nfruits.add(\"Cherry\");\n```\n\n### Access elements\n```java\nString first = fruits.get(0); // \"Apple\"\n```\n\n### Update elements\n```java\nfruits.set(1, \"Blueberry\"); // replaces \"Banana\" with \"Blueberry\"\n```\n\n### Remove elements\n```java\nfruits.remove(2);      // removes \"Cherry\"\nfruits.remove(\"Apple\"); // removes the first occurrence of \"Apple\"\n```\n\n### Size\n```java\nint size = fruits.size();\n```\n\n### Check containment\n```java\nboolean hasBerry = fruits.contains(\"Blueberry\");\n```\n\n### Iterate\n```java\nfor (String fruit : fruits) {\n    System.out.println(fruit);\n}\n\n// Or with index\nfor (int i = 0; i < fruits.size(); i++) {\n    System.out.println(i + \": \" + fruits.get(i));\n}\n```\n\n---\n\n## Common methods (from List interface)\n\n- `add(E e)`, `add(int index, E element)`\n- `get(int index)`\n- `set(int index, E element)`\n- `remove(int index)` or `remove(Object o)`\n- `size()`\n- `isEmpty()`\n- `clear()`\n- `contains(Object o)`\n- `indexOf(Object o)`, `lastIndexOf(Object o)`\n- `toArray()`, `<T> T[] toArray(T[] a)`\n\n---\n\n## Performance notes\n\n- Access by index: O(1)\n- Add at end: amortized O(1); may require resizing occasionally\n- Insert or remove in the middle: O(n) due to shifting elements\n- Capacity vs. size: Capacity grows as needed; you can anticipate size with constructor\n\n```java\n// Pre-allocate capacity to improve performance if you know approximate size\nList<String> names = new ArrayList<>(100);\n```\n\n---\n\n## Important tips\n\n- Prefer `List` interface type for variables:\n  ```java\n  List<String> list = new ArrayList<>();\n  ```\n  This makes it easier to switch implementations later (e.g., to `LinkedList`).\n- Be mindful of autoboxing when using primitive wrappers (e.g., `Integer` vs `int`).\n- When iterating and removing, use `Iterator` to avoid `ConcurrentModificationException`:\n  ```java\n  Iterator<String> it = fruits.iterator();\n  while (it.hasNext()) {\n      if (shouldRemove(it.next())) {\n          it.remove();\n      }\n  }\n  ```\n\n---\n\n## Quick practice questions\n\n1. Create an ArrayList of integers and add the numbers 1 to 5. Print the list.\n2. Replace the element at index 2 with 99. What does the list look like?\n3. Remove the first occurrence of 1. Display the final list.\n\n---\n\nIf you want, I can tailor this info sheet to a specific Java version or add short coding exercises with answer keys."
+        }
+      ],
+      "role": "assistant"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "previous_response_id": null,
+  "prompt_cache_key": null,
+  "reasoning": {
+    "effort": "minimal",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "store": false,
+  "temperature": 1.0,
+  "text": {
+    "format": {
+      "type": "text"
+    },
+    "verbosity": "low"
+  },
+  "tool_choice": "none",
+  "tools": [],
+  "top_logprobs": 0,
+  "top_p": 1.0,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 112,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 832,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 944
+  },
+  "user": null,
+  "metadata": {}
+}

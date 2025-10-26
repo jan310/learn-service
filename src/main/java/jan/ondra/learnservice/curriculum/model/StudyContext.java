@@ -7,7 +7,6 @@ public record StudyContext(
     String language,
     UUID curriculumId,
     String topic,
-    int currentUnitNumber,
     String currentContent,
     UUID nextUnitId,
     String nextHeading,

@@ -88,7 +88,6 @@ public class CurriculumRepository {
                 u.language,
                 c.id AS curriculum_id,
                 c.topic,
-                c.current_unit_number,
                 cu.content AS current_content,
                 nu.id AS next_unit_id,
                 nu.heading AS next_heading,

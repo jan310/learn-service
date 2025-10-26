@@ -1,7 +1,7 @@
 package jan.ondra.learnservice.user.service;
 
 import jan.ondra.learnservice.user.model.CreateUser;
-import jan.ondra.learnservice.user.model.UpdateUser;
+import jan.ondra.learnservice.user.model.ModifyUser;
 import jan.ondra.learnservice.user.model.User;
 import jan.ondra.learnservice.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -23,8 +23,8 @@ public class UserService {
         return userRepository.getUser(authSubject);
     }
 
-    public void updateUser(UpdateUser updateUser) {
-        userRepository.updateUser(updateUser);
+    public void modifyUser(ModifyUser modifyUser) {
+        userRepository.updateUser(modifyUser);
     }
 
     public void deleteUser(String authSubject) {

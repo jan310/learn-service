@@ -52,7 +52,7 @@ public class ScheduledTaskManager {
 
         List<UUID> curriculumsToFinish = new ArrayList<>();
         studyContexts.removeIf(studyContext -> {
-            if (studyContext.nextHeading() == null) {
+            if (studyContext.nextUnitId() == null) {
                 curriculumsToFinish.add(studyContext.curriculumId());
                 return true;
             }

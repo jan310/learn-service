@@ -16,7 +16,6 @@ public class StudyContextRowMapper implements RowMapper<StudyContext> {
             rs.getString("language"),
             rs.getObject("curriculum_id", UUID.class),
             rs.getString("topic"),
-            rs.getInt("current_unit_number"),
             rs.getString("current_content"),
             rs.getObject("next_unit_id", UUID.class),
             rs.getString("next_heading"),

@@ -2,7 +2,7 @@ package jan.ondra.learnservice.user.model;
 
 import java.time.LocalTime;
 
-public record UpdateUser(
+public record ModifyUser(
     String authSubject,
     boolean notificationEnabled,
     String notificationEmail,

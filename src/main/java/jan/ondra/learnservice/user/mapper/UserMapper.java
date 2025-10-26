@@ -2,7 +2,7 @@ package jan.ondra.learnservice.user.mapper;
 
 import jan.ondra.learnservice.user.controller.UserDTO;
 import jan.ondra.learnservice.user.model.CreateUser;
-import jan.ondra.learnservice.user.model.UpdateUser;
+import jan.ondra.learnservice.user.model.ModifyUser;
 import jan.ondra.learnservice.user.model.User;
 
 public class UserMapper {
@@ -28,8 +28,8 @@ public class UserMapper {
         );
     }
 
-    public static UpdateUser toUpdateUser(String authSubject, UserDTO userDTO) {
-        return new UpdateUser(
+    public static ModifyUser toModifyUser(String authSubject, UserDTO userDTO) {
+        return new ModifyUser(
             authSubject,
             userDTO.notificationEnabled(),
             userDTO.notificationEmail(),

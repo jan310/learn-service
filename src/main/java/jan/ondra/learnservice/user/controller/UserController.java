@@ -42,8 +42,8 @@ public class UserController {
 
     @PutMapping
     @ResponseStatus(NO_CONTENT)
-    public void updateUser(@AuthenticationPrincipal Jwt jwt, @RequestBody @Valid UserDTO userDTO) {
-        userService.updateUser(UserMapper.toUpdateUser(jwt.getSubject(), userDTO));
+    public void modifyUser(@AuthenticationPrincipal Jwt jwt, @RequestBody @Valid UserDTO userDTO) {
+        userService.modifyUser(UserMapper.toModifyUser(jwt.getSubject(), userDTO));
     }
 
     @DeleteMapping

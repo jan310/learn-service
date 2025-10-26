@@ -1,7 +1,7 @@
 package jan.ondra.learnservice.user.repository;
 
 import jan.ondra.learnservice.user.model.CreateUser;
-import jan.ondra.learnservice.user.model.UpdateUser;
+import jan.ondra.learnservice.user.model.ModifyUser;
 import jan.ondra.learnservice.user.model.User;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -74,8 +74,8 @@ public class UserRepository {
         return jdbcTemplate.queryForObject(sql, paramSource, userRowMapper);
     }
 
-    @CachePut(value = USERS_CACHE_NAME, key = "#updateUser.authSubject()")
-    public User updateUser(UpdateUser updateUser) {
+    @CachePut(value = USERS_CACHE_NAME, key = "#modifyUser.authSubject()")
+    public User updateUser(ModifyUser modifyUser) {
         var sql = """
             UPDATE users SET
                 notification_enabled = :notificationEnabled,
@@ -88,12 +88,12 @@ public class UserRepository {
             """;
 
         var paramSource = new MapSqlParameterSource()
-            .addValue("authSubject", updateUser.authSubject())
-            .addValue("notificationEnabled", updateUser.notificationEnabled())
-            .addValue("notificationEmail", updateUser.notificationEmail())
-            .addValue("notificationTime", updateUser.notificationTime())
-            .addValue("timeZone", updateUser.timeZone())
-            .addValue("language", updateUser.language());
+            .addValue("authSubject", modifyUser.authSubject())
+            .addValue("notificationEnabled", modifyUser.notificationEnabled())
+            .addValue("notificationEmail", modifyUser.notificationEmail())
+            .addValue("notificationTime", modifyUser.notificationTime())
+            .addValue("timeZone", modifyUser.timeZone())
+            .addValue("language", modifyUser.language());
 
         try {
             return jdbcTemplate.queryForObject(sql, paramSource, userRowMapper);
