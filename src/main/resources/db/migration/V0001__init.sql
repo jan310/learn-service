@@ -14,13 +14,13 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS curriculums (
     id                      UUID        DEFAULT uuidv7(),
     user_id                 UUID        NOT NULL,
-    status                  TEXT        NOT NULL,
+    queue_position          SMALLINT    NOT NULL, -- queue_position = -1 means the curriculum is finished
     topic                   TEXT        NOT NULL,
     current_unit_number     SMALLINT    NOT NULL,
     CONSTRAINT pk_curriculums PRIMARY KEY (id),
     CONSTRAINT fk_curriculums_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
-CREATE INDEX IF NOT EXISTS idx_curriculums_user_id_status ON curriculums (user_id, status);
+CREATE INDEX IF NOT EXISTS idx_curriculums_user_id_queue_position ON curriculums (user_id, queue_position);
 
 CREATE TABLE IF NOT EXISTS learning_units (
     id                      UUID        DEFAULT uuidv7(),

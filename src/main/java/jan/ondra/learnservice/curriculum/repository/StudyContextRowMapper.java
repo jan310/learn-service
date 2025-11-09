@@ -12,6 +12,7 @@ public class StudyContextRowMapper implements RowMapper<StudyContext> {
     @Override
     public StudyContext mapRow(ResultSet rs, int rowNum) throws SQLException {
         return new StudyContext(
+            rs.getObject("user_id", UUID.class),
             rs.getString("notification_email"),
             rs.getString("language"),
             rs.getObject("curriculum_id", UUID.class),

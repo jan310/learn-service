@@ -3,7 +3,6 @@ package jan.ondra.learnservice.curriculum.repository;
 import jan.ondra.learnservice.curriculum.model.CreateCurriculum;
 import jan.ondra.learnservice.curriculum.model.CreateLearningUnit;
 import jan.ondra.learnservice.curriculum.model.Curriculum;
-import jan.ondra.learnservice.curriculum.model.CurriculumStatus;
 import jan.ondra.learnservice.curriculum.model.LearningUnit;
 import jan.ondra.learnservice.curriculum.model.StudyContext;
 import jan.ondra.learnservice.helper.DatabaseIntegrationTest;
@@ -25,7 +24,6 @@ import java.util.UUID;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.ZoneOffset.UTC;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 @Import(CurriculumRepository.class)
 @SuppressWarnings("AssertBetweenInconvertibleTypes")
@@ -36,9 +34,26 @@ class CurriculumRepositoryTest extends DatabaseIntegrationTest {
 
     @BeforeEach
     void setUp() throws IOException {
-        //GIVEN
         var populateDbSql = new ClassPathResource("test-data/populate-db.sql").getContentAsString(UTF_8);
         jdbcTemplate.update(populateDbSql);
+    }
+
+    @Nested
+    class GetCurriculumQueueSizeForUser {
+
+        @Test
+        @DisplayName("returns the number of curriculums the user has in his queue")
+        void test1() {
+            //GIVEN
+            var aliceId = UUID.fromString("018f1c9a-1111-4e7b-a9e1-12a7f6f01a10");
+
+            //WHEN
+            var result = curriculumRepository.getCurriculumQueueSizeForUser(aliceId);
+
+            //THEN
+            assertThat(result).isEqualTo(2);
+        }
+
     }
 
     @Nested
@@ -48,11 +63,11 @@ class CurriculumRepositoryTest extends DatabaseIntegrationTest {
         @DisplayName("correctly persists given curriculum")
         void test1() {
             //GIVEN
-            var userId = UUID.fromString("c63a90d1-6cc2-48fd-b889-1d3cb50b2b56");
-            var createCurriculum = new CreateCurriculum(CurriculumStatus.ACTIVE, "Java", 1);
+            var aliceId = UUID.fromString("018f1c9a-1111-4e7b-a9e1-12a7f6f01a10");
+            var createCurriculum = new CreateCurriculum(2, "Java", 1);
 
             //WHEN
-            var curriculumId = curriculumRepository.persistCurriculum(userId, createCurriculum);
+            var curriculumId = curriculumRepository.persistCurriculum(aliceId, createCurriculum);
 
             //THEN
             var insertedCurriculum = selectCurriculum(curriculumId);
@@ -61,7 +76,7 @@ class CurriculumRepositoryTest extends DatabaseIntegrationTest {
                 .ignoringFields("id", "userId")
                 .isEqualTo(createCurriculum);
             assertThat(insertedCurriculum.userId())
-                .isEqualTo(userId);
+                .isEqualTo(aliceId);
         }
 
     }
@@ -73,7 +88,10 @@ class CurriculumRepositoryTest extends DatabaseIntegrationTest {
         @DisplayName("correctly persists given learning units")
         void test1() {
             //GIVEN
-            var curriculumId = UUID.fromString("c3e2f890-4f3d-4b29-8a7e-5b21d9d2c47f");
+            var curriculumId = UUID.fromString("018f1d00-2001-4f3a-9e11-aaa111111001");
+            jdbcTemplate.update(
+                "DELETE FROM learning_units WHERE curriculum_id = '018f1d00-2001-4f3a-9e11-aaa111111001'"
+            );
             var learningUnits = List.of(
                 new CreateLearningUnit(
                     1,
@@ -116,32 +134,35 @@ class CurriculumRepositoryTest extends DatabaseIntegrationTest {
         @Test
         @DisplayName("returns correct data")
         void test1() {
+            //GIVEN
+            var utcDateTime = OffsetDateTime.of(LocalDateTime.of(2025, 11, 12, 5, 0), UTC);
+
             //WHEN
-            var contexts = curriculumRepository.getStudyContexts(
-                OffsetDateTime.of(LocalDateTime.of(2025, 11, 1, 9, 0), UTC)
-            );
+            var contexts = curriculumRepository.getStudyContexts(utcDateTime);
 
             //THEN
             assertThat(contexts).containsExactlyInAnyOrder(
                 new StudyContext(
-                    "david@example.com",
-                    "de",
-                    UUID.fromString("d02c9832-8b3e-4cc7-84a1-5ebeb9c13b12"),
-                    "Cloud Computing",
-                    "Virtual machines, containers, object/block storage.",
-                    UUID.fromString("ab1234d5-e678-40a1-78bc-3c4d5e6f7081"),
-                    "Networking in Cloud",
-                    "VPCs"
+                    UUID.fromString("018f1c9a-1111-4e7b-a9e1-12a7f6f01a10"),
+                    "alice@example.com",
+                    "en",
+                    UUID.fromString("018f1d00-2001-4f3a-9e11-aaa111111001"),
+                    "Intro to Databases",
+                    "A database is an organized collection of data that can be easily accessed, managed, and updated.",
+                    UUID.fromString("018f1e00-3002-4a9e-9e11-bbb111111002"),
+                    "Database Models",
+                    "Relational vs Non-relational"
                 ),
                 new StudyContext(
-                    "emma@example.com",
+                    UUID.fromString("018f1c9a-1112-4b6d-bc42-87f5c6b20a21"),
+                    "bob@example.com",
                     "en",
-                    UUID.fromString("e08da6a4-6bce-4a0f-b0cc-b52b8ab39b89"),
-                    "Cybersecurity Basics",
-                    "Personal and enterprise security tips.",
-                    null,
-                    null,
-                    null
+                    UUID.fromString("018f1d00-2004-4f3a-9e11-aaa111111004"),
+                    "Web Development",
+                    "Overview of how websites work, from clients to servers.",
+                    UUID.fromString("018f1e00-4002-4a9e-9e11-bbb111111002"),
+                    "HTML & CSS Basics",
+                    "Building web pages"
                 )
             );
         }
@@ -149,32 +170,38 @@ class CurriculumRepositoryTest extends DatabaseIntegrationTest {
     }
 
     @Nested
-    class SetStatusToFinished {
+    class AdvanceCurriculumQueueForUsers {
 
         @Test
         @DisplayName("sets status of all mentioned curriculums to FINISHED")
         void test1() {
             //GIVEN
-            var curriculumIds = List.of(
-                UUID.fromString("a1f5033a-4b4d-47cd-90ce-d0b3df73af21"),
-                UUID.fromString("b21b8e5e-733d-41d8-9062-8900563f2d39"),
-                UUID.fromString("c3e2f890-4f3d-4b29-8a7e-5b21d9d2c47f")
-            );
+            var aliceId = UUID.fromString("018f1c9a-1111-4e7b-a9e1-12a7f6f01a10");
+            var bobId = UUID.fromString("018f1c9a-1112-4b6d-bc42-87f5c6b20a21");
+            var carolId = UUID.fromString("018f1c9a-1113-4c82-91f5-21c0e9d54a32");
 
             //WHEN
-            curriculumRepository.setStatusToFinished(curriculumIds);
+            curriculumRepository.advanceCurriculumQueueForUsers(List.of(aliceId, bobId, carolId));
 
             //THEN
-            curriculumIds.forEach(id ->
-                assertThat(selectCurriculum(id).status())
-                    .isEqualTo(CurriculumStatus.FINISHED)
-            );
+            // Alice's curriculums
+            assertThat(selectCurriculum(UUID.fromString("018f1d00-2001-4f3a-9e11-aaa111111001")).queuePosition()).isEqualTo(-1);
+            assertThat(selectCurriculum(UUID.fromString("018f1d00-2002-4f3a-9e11-aaa111111002")).queuePosition()).isEqualTo(0);
+            assertThat(selectCurriculum(UUID.fromString("018f1d00-2003-4f3a-9e11-aaa111111003")).queuePosition()).isEqualTo(-1);
+            // Bobs's curriculums
+            assertThat(selectCurriculum(UUID.fromString("018f1d00-2004-4f3a-9e11-aaa111111004")).queuePosition()).isEqualTo(-1);
+            assertThat(selectCurriculum(UUID.fromString("018f1d00-2005-4f3a-9e11-aaa111111005")).queuePosition()).isEqualTo(0);
+            assertThat(selectCurriculum(UUID.fromString("018f1d00-2006-4f3a-9e11-aaa111111006")).queuePosition()).isEqualTo(-1);
+            // Carlos's curriculums
+            assertThat(selectCurriculum(UUID.fromString("018f1d00-2007-4f3a-9e11-aaa111111007")).queuePosition()).isEqualTo(-1);
+            assertThat(selectCurriculum(UUID.fromString("018f1d00-2008-4f3a-9e11-aaa111111008")).queuePosition()).isEqualTo(-1);
+            assertThat(selectCurriculum(UUID.fromString("018f1d00-2009-4f3a-9e11-aaa111111009")).queuePosition()).isEqualTo(-1);
         }
 
         @Test
         @DisplayName("doesn't fail when list is empty")
         void test2() {
-            curriculumRepository.setStatusToFinished(List.of());
+            curriculumRepository.advanceCurriculumQueueForUsers(List.of());
         }
 
     }
@@ -186,25 +213,21 @@ class CurriculumRepositoryTest extends DatabaseIntegrationTest {
         @DisplayName("increments current_unit_number of given curriculums")
         void test1() {
             //GIVEN
-            var curriculumIds = List.of(
-                UUID.fromString("a1f5033a-4b4d-47cd-90ce-d0b3df73af21"),
-                UUID.fromString("b21b8e5e-733d-41d8-9062-8900563f2d39"),
-                UUID.fromString("c3e2f890-4f3d-4b29-8a7e-5b21d9d2c47f")
-            );
+            var curriculum1 = UUID.fromString("018f1d00-2001-4f3a-9e11-aaa111111001");
+            var curriculum2 = UUID.fromString("018f1d00-2004-4f3a-9e11-aaa111111004");
 
             //WHEN
-            curriculumRepository.incrementCurrentUnitNumber(curriculumIds);
+            curriculumRepository.incrementCurrentUnitNumber(List.of(curriculum1, curriculum2));
 
             //THEN
-            assertThat(selectCurriculum(curriculumIds.getFirst()).currentUnitNumber()).isEqualTo(3);
-            assertThat(selectCurriculum(curriculumIds.get(1)).currentUnitNumber()).isEqualTo(2);
-            assertThat(selectCurriculum(curriculumIds.get(2)).currentUnitNumber()).isEqualTo(2);
+            assertThat(selectCurriculum(curriculum1).currentUnitNumber()).isEqualTo(2);
+            assertThat(selectCurriculum(curriculum2).currentUnitNumber()).isEqualTo(2);
         }
 
         @Test
         @DisplayName("doesn't fail when list is empty")
         void test2() {
-            curriculumRepository.setStatusToFinished(List.of());
+            curriculumRepository.incrementCurrentUnitNumber(List.of());
         }
 
     }
@@ -216,21 +239,25 @@ class CurriculumRepositoryTest extends DatabaseIntegrationTest {
         @DisplayName("updates the content of the given learning units")
         void test1() {
             //GIVEN
-            var updates = Map.of(
-                UUID.fromString("f303c418-928f-48e5-b9d3-893681e3ff03"), "content 1",
-                UUID.fromString("fa21dc26-1902-4f2d-b112-be0129f1ff11"), "content 2",
-                UUID.fromString("ab1234d5-e678-40a1-78bc-3c4d5e6f7081"), "content 3"
-            );
+            var unit1 = UUID.fromString("018f1e00-3001-4a9e-9e11-bbb111111001");
+            var unit2 = UUID.fromString("018f1e00-3002-4a9e-9e11-bbb111111002");
+            var unit3 = UUID.fromString("018f1e00-3003-4a9e-9e11-bbb111111003");
 
             //WHEN
-            curriculumRepository.updateLearningUnitContents(updates);
+            curriculumRepository.updateLearningUnitContents(
+                Map.of(
+                    unit1, "content 1",
+                    unit2, "content 2",
+                    unit3, "content 3"
+                )
+            );
 
             //THEN
-            assertThat(selectLearningUnit(UUID.fromString("f303c418-928f-48e5-b9d3-893681e3ff03")).content())
+            assertThat(selectLearningUnit(unit1).content())
                 .isEqualTo("content 1");
-            assertThat(selectLearningUnit(UUID.fromString("fa21dc26-1902-4f2d-b112-be0129f1ff11")).content())
+            assertThat(selectLearningUnit(unit2).content())
                 .isEqualTo("content 2");
-            assertThat(selectLearningUnit(UUID.fromString("ab1234d5-e678-40a1-78bc-3c4d5e6f7081")).content())
+            assertThat(selectLearningUnit(unit3).content())
                 .isEqualTo("content 3");
         }
 

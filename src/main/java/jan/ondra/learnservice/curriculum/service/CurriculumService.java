@@ -15,8 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static jan.ondra.learnservice.curriculum.model.CurriculumStatus.ACTIVE;
-
 @Service
 public class CurriculumService {
 
@@ -51,10 +49,11 @@ public class CurriculumService {
             )
             .toList();
 
+        var queuePosition = curriculumRepository.getCurriculumQueueSizeForUser(user.id());
         var curriculumId = curriculumRepository.persistCurriculum(
             user.id(),
             new CreateCurriculum(
-                ACTIVE,
+                queuePosition,
                 topic,
                 1
             )
@@ -68,8 +67,8 @@ public class CurriculumService {
         return curriculumRepository.getStudyContexts(utcDateTime);
     }
 
-    public void setStatusToFinished(List<UUID> curriculumIds) {
-        curriculumRepository.setStatusToFinished(curriculumIds);
+    public void advanceCurriculumQueueForUsers(List<UUID> userIds) {
+        curriculumRepository.advanceCurriculumQueueForUsers(userIds);
     }
 
     public void incrementCurrentUnitNumber(List<UUID> curriculumIds) {

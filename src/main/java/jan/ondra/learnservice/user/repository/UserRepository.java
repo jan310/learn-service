@@ -16,7 +16,7 @@ public class UserRepository {
 
     private static final String USERS_NOTIFICATION_EMAIL_UNIQUE_VIOLATION =
         "violates unique constraint \"uq_users_notification_email\"";
-    private static final String USERS_CACHE_NAME = "users";
+    private static final String USERS_CACHE = "users";
 
     private static final UserRowMapper userRowMapper = new UserRowMapper();
 
@@ -26,7 +26,7 @@ public class UserRepository {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    @CachePut(value = USERS_CACHE_NAME, key = "#createUser.authSubject()")
+    @CachePut(value = USERS_CACHE, key = "#createUser.authSubject()")
     public User persistUser(CreateUser createUser) {
         var sql = """
             INSERT INTO users (
@@ -67,14 +67,14 @@ public class UserRepository {
         }
     }
 
-    @Cacheable(value = USERS_CACHE_NAME, key = "#authSubject")
+    @Cacheable(value = USERS_CACHE, key = "#authSubject")
     public User getUser(String authSubject) {
         var sql = "SELECT * FROM users WHERE auth_subject = :authSubject";
         var paramSource = new MapSqlParameterSource("authSubject", authSubject);
         return jdbcTemplate.queryForObject(sql, paramSource, userRowMapper);
     }
 
-    @CachePut(value = USERS_CACHE_NAME, key = "#modifyUser.authSubject()")
+    @CachePut(value = USERS_CACHE, key = "#modifyUser.authSubject()")
     public User updateUser(ModifyUser modifyUser) {
         var sql = """
             UPDATE users SET
@@ -106,7 +106,7 @@ public class UserRepository {
         }
     }
 
-    @CacheEvict(value = USERS_CACHE_NAME, key = "#authSubject")
+    @CacheEvict(value = USERS_CACHE, key = "#authSubject")
     public void deleteUser(String authSubject) {
         var sql = "DELETE FROM users WHERE auth_subject = :authSubject;";
         var paramSource = new MapSqlParameterSource("authSubject", authSubject);

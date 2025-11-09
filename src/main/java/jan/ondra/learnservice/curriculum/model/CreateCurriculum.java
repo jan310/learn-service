@@ -1,7 +1,7 @@
 package jan.ondra.learnservice.curriculum.model;
 
 public record CreateCurriculum(
-    CurriculumStatus status,
+    int queuePosition,
     String topic,
     int currentUnitNumber
 ) {}

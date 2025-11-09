@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static java.util.Objects.requireNonNull;
+
 @Repository
 public class CurriculumRepository {
 
@@ -24,17 +26,29 @@ public class CurriculumRepository {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    public int getCurriculumQueueSizeForUser(UUID userId) {
+        var sql = """
+            SELECT COUNT(*)
+            FROM curriculums
+            WHERE user_id = :userId AND queue_position >= 0;
+            """;
+
+        var paramSource = new MapSqlParameterSource("userId", userId);
+
+        return requireNonNull(jdbcTemplate.queryForObject(sql, paramSource, Integer.class));
+    }
+
     public UUID persistCurriculum(UUID userId, CreateCurriculum createCurriculum) {
         var sql = """
             INSERT INTO curriculums (
                 user_id,
-                status,
+                queue_position,
                 topic,
                 current_unit_number
             )
             VALUES (
                 :userId,
-                :status,
+                :queuePosition,
                 :topic,
                 :currentUnitNumber
             )
@@ -43,7 +57,7 @@ public class CurriculumRepository {
 
         var paramSource = new MapSqlParameterSource()
             .addValue("userId", userId)
-            .addValue("status", createCurriculum.status().name())
+            .addValue("queuePosition", createCurriculum.queuePosition())
             .addValue("topic", createCurriculum.topic())
             .addValue("currentUnitNumber", createCurriculum.currentUnitNumber());
 
@@ -84,6 +98,7 @@ public class CurriculumRepository {
     public List<StudyContext> getStudyContexts(OffsetDateTime utcDateTime) {
         var sql = """
             SELECT
+                u.id AS user_id,
                 u.notification_email,
                 u.language,
                 c.id AS curriculum_id,
@@ -95,7 +110,7 @@ public class CurriculumRepository {
             FROM users u
             INNER JOIN curriculums c
                 ON c.user_id = u.id
-                AND c.status = 'ACTIVE'
+                AND c.queue_position = 0
             INNER JOIN learning_units cu
                 ON cu.curriculum_id = c.id
                 AND cu.number = c.current_unit_number
@@ -112,26 +127,22 @@ public class CurriculumRepository {
         return jdbcTemplate.query(sql, paramSource, studyContextRowMapper);
     }
 
-    public void setStatusToFinished(List<UUID> curriculumIds) {
-        if (curriculumIds.isEmpty()) {
-            return;
-        }
+    public void advanceCurriculumQueueForUsers(List<UUID> userIds) {
+        if (userIds.isEmpty()) return;
 
         var sql = """
             UPDATE curriculums
-            SET status = 'FINISHED'
-            WHERE id IN (:curriculumIds);
+            SET queue_position = queue_position - 1
+            WHERE user_id IN (:userIds) AND queue_position >= 0;
             """;
 
-        var paramSource = new MapSqlParameterSource("curriculumIds", curriculumIds);
+        var paramSource = new MapSqlParameterSource("userIds", userIds);
 
         jdbcTemplate.update(sql, paramSource);
     }
 
     public void incrementCurrentUnitNumber(List<UUID> curriculumIds) {
-        if (curriculumIds.isEmpty()) {
-            return;
-        }
+        if (curriculumIds.isEmpty()) return;
 
         var sql = """
             UPDATE curriculums
@@ -145,9 +156,7 @@ public class CurriculumRepository {
     }
 
     public void updateLearningUnitContents(Map<UUID, String> learningUnitContents) {
-        if (learningUnitContents.isEmpty()) {
-            return;
-        }
+        if (learningUnitContents.isEmpty()) return;
 
         var sql = """
             UPDATE learning_units

@@ -14,7 +14,6 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 
 import java.time.LocalTime;
 import java.util.List;
-import java.util.Map;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -27,7 +26,7 @@ class UserRepositoryTest extends DatabaseIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        namedParameterJdbcTemplate.update("DELETE FROM users;", Map.of());
+        jdbcTemplate.update("DELETE FROM users;");
     }
 
     @Nested
@@ -66,16 +65,14 @@ class UserRepositoryTest extends DatabaseIntegrationTest {
         void test2() {
             //GIVEN
             var email = "test@email.com";
-            inserUser(
-                new CreateUser(
-                    "authSubject1",
-                    true,
-                    email,
-                    LocalTime.of(5,0),
-                    "Europe/Berlin",
-                    "de"
-                )
-            );
+            inserUser(new CreateUser(
+                "authSubject1",
+                true,
+                email,
+                LocalTime.of(5,0),
+                "Europe/Berlin",
+                "de"
+            ));
             var createUser = new CreateUser(
                 "authSubject2",
                 true,
@@ -99,26 +96,22 @@ class UserRepositoryTest extends DatabaseIntegrationTest {
         @DisplayName("returns correct user")
         void test1() {
             //GIVEN
-            var user1 = inserUser(
-                new CreateUser(
-                    "authSubject1",
-                    true,
-                    "test1@email.com",
-                    LocalTime.of(5,0),
-                    "Europe/Berlin",
-                    "de"
-                )
-            );
-            inserUser(
-                new CreateUser(
-                    "authSubject2",
-                    true,
-                    "test2@email.com",
-                    LocalTime.of(5,0),
-                    "Europe/Berlin",
-                    "de"
-                )
-            );
+            var user1 = inserUser(new CreateUser(
+                "authSubject1",
+                true,
+                "test1@email.com",
+                LocalTime.of(5,0),
+                "Europe/Berlin",
+                "de"
+            ));
+            inserUser(new CreateUser(
+                "authSubject2",
+                true,
+                "test2@email.com",
+                LocalTime.of(5,0),
+                "Europe/Berlin",
+                "de"
+            ));
 
             //WHEN
             var returnedUser = userRepository.getUser("authSubject1");
@@ -136,16 +129,14 @@ class UserRepositoryTest extends DatabaseIntegrationTest {
         @DisplayName("updates user")
         void test1() {
             //GIVEN
-            inserUser(
-                new CreateUser(
-                    "authSubject1",
-                    true,
-                    "test1@email.com",
-                    LocalTime.of(5,0),
-                    "Europe/Berlin",
-                    "de"
-                )
-            );
+            inserUser(new CreateUser(
+                "authSubject1",
+                true,
+                "test1@email.com",
+                LocalTime.of(5,0),
+                "Europe/Berlin",
+                "de"
+            ));
             var updateUser = new ModifyUser(
                 "authSubject1",
                 false,
@@ -172,26 +163,22 @@ class UserRepositoryTest extends DatabaseIntegrationTest {
         @DisplayName("throws EmailAlreadyInUseException when email is already used by another user")
         void test2() {
             //GIVEN
-            inserUser(
-                new CreateUser(
-                    "authSubject1",
-                    true,
-                    "test1@email.com",
-                    LocalTime.of(5,0),
-                    "Europe/Berlin",
-                    "de"
-                )
-            );
-            inserUser(
-                new CreateUser(
-                    "authSubject2",
-                    true,
-                    "test2@email.com",
-                    LocalTime.of(5,0),
-                    "Europe/Berlin",
-                    "de"
-                )
-            );
+            inserUser(new CreateUser(
+                "authSubject1",
+                true,
+                "test1@email.com",
+                LocalTime.of(5,0),
+                "Europe/Berlin",
+                "de"
+            ));
+            inserUser(new CreateUser(
+                "authSubject2",
+                true,
+                "test2@email.com",
+                LocalTime.of(5,0),
+                "Europe/Berlin",
+                "de"
+            ));
             var updateUser = new ModifyUser(
                 "authSubject2",
                 false,
@@ -215,16 +202,14 @@ class UserRepositoryTest extends DatabaseIntegrationTest {
         @DisplayName("deletes correct user")
         void test1() {
             //GIVEN
-            var user1 = inserUser(
-                new CreateUser(
-                    "authSubject1",
-                    true,
-                    "test1@email.com",
-                    LocalTime.of(5,0),
-                    "Europe/Berlin",
-                    "de"
-                )
-            );
+            var user1 = inserUser(new CreateUser(
+                "authSubject1",
+                true,
+                "test1@email.com",
+                LocalTime.of(5,0),
+                "Europe/Berlin",
+                "de"
+            ));
             var user2 = inserUser(
                 new CreateUser(
                     "authSubject2",
@@ -282,7 +267,7 @@ class UserRepositoryTest extends DatabaseIntegrationTest {
     }
 
     private List<User> selectAllUsersFromDB() {
-        return namedParameterJdbcTemplate.query("SELECT * FROM users", new UserRowMapper());
+        return jdbcTemplate.query("SELECT * FROM users", new UserRowMapper());
     }
 
 }

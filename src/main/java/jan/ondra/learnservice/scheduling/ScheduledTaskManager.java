@@ -50,17 +50,16 @@ public class ScheduledTaskManager {
             );
         }
 
-        List<UUID> curriculumsToFinish = new ArrayList<>();
+        List<UUID> usersWhoFinishedCurriculum = new ArrayList<>();
         studyContexts.removeIf(studyContext -> {
             if (studyContext.nextUnitId() == null) {
-                curriculumsToFinish.add(studyContext.curriculumId());
+                usersWhoFinishedCurriculum.add(studyContext.userId());
                 return true;
             }
             return false;
         });
 
         Map<UUID, CompletableFuture<String>> futureUnitContents = new HashMap<>();
-
         for (var studyContext : studyContexts) {
             CompletableFuture<String> futureUnitContent = openAiClient.generateLearningUnitContentAsync(
                 studyContext.language(),
@@ -70,9 +69,7 @@ public class ScheduledTaskManager {
             );
             futureUnitContents.put(studyContext.nextUnitId(), futureUnitContent);
         }
-
         CompletableFuture.allOf(futureUnitContents.values().toArray(new CompletableFuture[0])).join();
-
         Map<UUID, String> nextUnitContents = futureUnitContents.entrySet().stream().collect(
             Collectors.toMap(
                 Map.Entry::getKey,
@@ -80,12 +77,10 @@ public class ScheduledTaskManager {
             )
         );
 
-        curriculumService.setStatusToFinished(curriculumsToFinish);
+        curriculumService.advanceCurriculumQueueForUsers(usersWhoFinishedCurriculum);
 
         curriculumService.incrementCurrentUnitNumber(
-            studyContexts.stream().map(
-                StudyContext::curriculumId
-            ).toList()
+            studyContexts.stream().map(StudyContext::curriculumId).toList()
         );
 
         curriculumService.updateLearningUnitContents(nextUnitContents);

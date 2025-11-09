@@ -5,7 +5,7 @@ import java.util.UUID;
 public record Curriculum(
     UUID id,
     UUID userId,
-    CurriculumStatus status,
+    int queuePosition,
     String topic,
     int currentUnitNumber
 ) {}
